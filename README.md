@@ -59,26 +59,46 @@ You'll need these installed on your computer:
 
 ## File Structure Setup
 
+**IMPORTANT:** All files must be within the project directory structure. The tool looks for files inside the `DSXtractAI-preprocessing` project folder.
+
 Before using the organizer, set up your folders like this:
 
 ```
-project-folder/
-├── files/
-│   ├── stage/
-│   │   └── stageFiles/          ← Put your messy folders here
-│   │       ├── folder1/         ← Contains PDF + related files
-│   │       ├── folder2/         ← Contains PDF + related files
-│   │       └── folder3/         ← Maybe just loose files
-│   └── finished/                ← Organized results go here
+DSXtractAI-preprocessing/          ← Your project root
+├── features/
+├── node_modules/
+├── files/                         ← Create this folder
+│   ├── stage/                     ← Put your messy folders here
+│   │   ├── folder1/              ← Contains PDF + related files
+│   │   ├── folder2/              ← Contains PDF + related files
+│   │   └── folder3/              ← Maybe just loose files
+│   └── finished/                 ← Organized results go here (auto-created)
+├── package.json
+└── server.js
 ```
+
+**Backwards Compatibility Note:**  
+If you have an existing `files/stage/stageFiles/` directory, the tool will automatically detect and use it. Otherwise, it will use `files/stage/` directly.
 
 ### Setting Up Your Input Folder
 
-1. Create the folder structure: `files/stage/stageFiles/`
-2. Put all your disorganized folders into `stageFiles/`
+1. Create the folder structure inside your project: `files/stage/`
+2. Put all your disorganized folders directly into the `stage/` folder
 3. Each folder should contain:
    - One PDF file (the "master" document)
    - Any number of related files (images, data, notes)
+
+**Example:**
+```
+DSXtractAI-preprocessing/files/stage/
+├── pinmap_001/
+│   ├── document.pdf
+│   ├── image1.jpg
+│   └── data.csv
+└── pinmap_002/
+    ├── manual.pdf
+    └── schematic.png
+```
 
 ## Using the Organizer
 
@@ -190,8 +210,9 @@ After running the organizer, you'll get a summary like:
 ### Common Issues:
 
 **"No folders found"**
-- Check that your folders are in `files/stage/stageFiles/`
-- Make sure the folder path exists
+- Check that your folders are in `files/stage/` within the project directory
+- Make sure you created the `files/stage/` folder inside `DSXtractAI-preprocessing/`
+- Verify the folder path: `<project-root>/files/stage/`
 
 **"Port already in use"**
 - Another program is using port 3000
@@ -215,8 +236,12 @@ After running the organizer, you'll get a summary like:
 
 ### Custom Folder Locations
 
-You can modify the folder paths in `features/fileOrganizer.js`:
-- Change `this.stageDir` for input location
+All paths are relative to the project root. The default locations are:
+- **Input:** `<project-root>/files/stage/`
+- **Output:** `<project-root>/files/finished/`
+
+You can modify these paths in `features/fileOrganizer.js`:
+- Change `this.baseStageDir` for input location
 - Change `this.finishedDir` for output location
 
 ### Running in Development Mode

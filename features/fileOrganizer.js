@@ -3,16 +3,45 @@ const path = require('path');
 
 class FileOrganizer {
   constructor() {
-    this.stageDir = path.join(__dirname, '../../files/stage/stageFiles');
+    // Base stage directory
+    this.baseStageDir = path.join(__dirname, '../files/stage');
+    
+    // Will be set during initialization (backwards compatible with stageFiles subdirectory)
+    this.stageDir = null;
     
     // Create timestamped folder for this sorting session
     const now = new Date();
     const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
     const sortedFolderName = `Sorted-${timestamp}`;
     
-    this.finishedDir = path.join(__dirname, '../../files/finished');
+    this.finishedDir = path.join(__dirname, '../files/finished');
     this.sortedDir = path.join(this.finishedDir, sortedFolderName);
     this.noPdfDir = path.join(this.sortedDir, 'A-NoPDFSFound');
+  }
+
+  /**
+   * Determine the correct stage directory to use.
+   * Checks for stageFiles subdirectory first (backwards compatibility), then falls back to stage.
+   */
+  async initializeStageDir() {
+    const stageFilesPath = path.join(this.baseStageDir, 'stageFiles');
+    
+    try {
+      // Check if stageFiles subdirectory exists
+      await fs.access(stageFilesPath);
+      const stats = await fs.stat(stageFilesPath);
+      if (stats.isDirectory()) {
+        this.stageDir = stageFilesPath;
+        console.log('Using backwards-compatible path: files/stage/stageFiles');
+        return;
+      }
+    } catch {
+      // stageFiles doesn't exist or isn't accessible
+    }
+    
+    // Fall back to stage directory
+    this.stageDir = this.baseStageDir;
+    console.log('Using path: files/stage');
   }
 
   /**
@@ -21,6 +50,9 @@ class FileOrganizer {
   async organizeFilesByPdf() {
     try {
       console.log('Starting file organization...');
+      
+      // Initialize stage directory path (backwards compatible check)
+      await this.initializeStageDir();
       
       // Ensure finished and sorted directories exist
       await fs.mkdir(this.finishedDir, { recursive: true });
